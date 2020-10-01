@@ -130,13 +130,28 @@ object LightClassUtil {
         return getPsiMethodWrappers(function).toList()
     }
 
+    fun getLightClassMethodsSequence(function: KtFunction, methodFilter: ((KtLightMethod) -> Boolean)? = null): Sequence<PsiMethod> {
+        return getPsiMethodWrappers(function, methodFilter)
+    }
+
     private fun getPsiMethodWrapper(declaration: KtDeclaration): PsiMethod? {
         return getPsiMethodWrappers(declaration).firstOrNull()
     }
 
-    private fun getPsiMethodWrappers(declaration: KtDeclaration): Sequence<KtLightMethod> =
-        getWrappingClasses(declaration).flatMap { it.methods.asSequence() }
+    private fun getPsiMethodWrappers(
+        declaration: KtDeclaration,
+        methodFilter: ((KtLightMethod) -> Boolean)? = null
+    ): Sequence<KtLightMethod> =
+        getWrappingClasses(declaration)
+            .flatMap { it.methods.asSequence() }
             .filterIsInstance<KtLightMethod>()
+            .let {
+                if (methodFilter != null) {
+                    it.filter(methodFilter)
+                } else {
+                    it
+                }
+            }
             .filter { it.kotlinOrigin === declaration || it.navigationElement === declaration }
 
     private fun getWrappingClass(declaration: KtDeclaration): PsiClass? {
