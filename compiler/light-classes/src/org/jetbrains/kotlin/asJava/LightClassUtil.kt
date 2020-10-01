@@ -188,18 +188,18 @@ object LightClassUtil {
     ): Array<PsiClass> =
         JavaElementFinder.getInstance(project).findClasses(fqName.asString(), GlobalSearchScope.allScope(project))
 
-    private fun findMultifileClassMetadata(psiClass: PsiClass): List<String>? {
-        val metadata = psiClass.getAnnotation(KOTLIN_METADATA_ANNOTATION)
-        if (metadata != null) {
-            val k = (metadata.findAttributeValue(METADATA_KIND) as? PsiLiteralValue)?.value as Int
-            if (k == MULTI_FILE_CLASS_FACADE) {
-                val d1 = (metadata.findAttributeValue(METADATA_DATA1) as? PsiArrayInitializerMemberValue)?.initializers?.mapNotNull {
-                    (it as? PsiLiteralValue)?.value as? String
-                } ?: emptyList()
-                return d1
-            }
+    private fun findMultiFilePartsFromMetadata(psiClass: PsiClass): List<String>? {
+        val metadata = psiClass.getAnnotation(KOTLIN_METADATA_ANNOTATION) ?: return null
+
+        val k: Int = (metadata.findAttributeValue(METADATA_KIND) as? PsiLiteralValue)?.value as Int
+        if (k != MULTI_FILE_CLASS_FACADE) {
+            return null
         }
-        return null
+
+        val data1ArrayMemberValue = (metadata.findAttributeValue(METADATA_DATA1) as? PsiArrayInitializerMemberValue) ?: return null
+        return data1ArrayMemberValue.initializers.mapNotNull {
+            (it as? PsiLiteralValue)?.value as? String
+        }
     }
 
     private fun getWrappingClasses(declaration: KtDeclaration): Sequence<PsiClass> {
@@ -208,15 +208,19 @@ object LightClassUtil {
         if (wrapperClassOrigin is KtObjectDeclaration && wrapperClassOrigin.isCompanion() && wrapperClass.parent is PsiClass) {
             return sequenceOf(wrapperClass, wrapperClass.parent as PsiClass)
         }
-        val wrappers = mutableListOf<PsiClass>(wrapperClass);
-        // for multipart classes we need to add parts to wrappingClasses, otherwise the declarations there wouldn't be found in stubs
-        findMultifileClassMetadata(wrapperClass)?.let {
-            it.forEach {
-                wrappers.addAll(findPsiClass(declaration.project, FqName.fromSegments(it.split("/"))).toList())
+
+        return sequence {
+            yield(wrapperClass)
+
+            findMultiFilePartsFromMetadata(wrapperClass)?.let { multiFilePartsFromMetadata ->
+                // for multipart classes we need to add parts to wrappingClasses, otherwise the declarations there wouldn't be found in stubs
+                for (multiFileClassJVMName in multiFilePartsFromMetadata) {
+                    val partClassFqName = FqName.fromSegments(multiFileClassJVMName.split("/"))
+                    val partClasses = findPsiClass(declaration.project, partClassFqName).toList()
+                    yieldAll(partClasses)
+                }
             }
-            return wrappers.asSequence()
         }
-        return wrappers.asSequence()
     }
 
     fun canGenerateLightClass(declaration: KtDeclaration): Boolean {
