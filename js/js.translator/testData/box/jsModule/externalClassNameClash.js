@@ -6,7 +6,11 @@ define("a", [], function() {
         return "O";
     };
 
-    return { A: A };
+    return {
+        A: A,
+        bar: function() { return 1; },
+        prop: 10
+    };
 });
 
 define("b", [], function() {
@@ -17,5 +21,9 @@ define("b", [], function() {
         return "K";
     };
 
-    return { A: A };
+    return {
+        A: A,
+        bar: function() { return 2; },
+        prop: 20
+    };
 });
