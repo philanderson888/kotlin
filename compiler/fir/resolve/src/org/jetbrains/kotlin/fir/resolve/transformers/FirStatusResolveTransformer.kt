@@ -426,6 +426,7 @@ abstract class AbstractFirStatusResolveTransformer(
         enumEntry: FirEnumEntry,
         data: FirResolvedDeclarationStatus?
     ): CompositeTransformResult<FirDeclaration> {
+        enumEntry.transformStatus(this, statusResolver.resolveStatus(enumEntry, containingClass, isLocal = false))
         return transformDeclaration(enumEntry, data)
     }
 

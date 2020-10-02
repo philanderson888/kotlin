@@ -104,6 +104,10 @@ class FirStatusResolver(
         return resolveStatus(field, field.status, containingClass, isLocal) { emptyList() }
     }
 
+    fun resolveStatus(enumEntry: FirEnumEntry, containingClass: FirClass<*>?, isLocal: Boolean): FirResolvedDeclarationStatus {
+        return resolveStatus(enumEntry, enumEntry.status, containingClass, isLocal) { emptyList() }
+    }
+
     private inline fun resolveStatus(
         declaration: FirDeclaration,
         status: FirDeclarationStatus,
