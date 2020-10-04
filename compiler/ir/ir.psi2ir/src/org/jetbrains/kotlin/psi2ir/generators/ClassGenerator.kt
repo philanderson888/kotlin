@@ -19,7 +19,6 @@ package org.jetbrains.kotlin.psi2ir.generators
 import org.jetbrains.kotlin.backend.common.CodegenUtil
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.descriptors.*
-import org.jetbrains.kotlin.ir.UNDEFINED_OFFSET
 import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.descriptors.IrImplementingDelegateDescriptorImpl
 import org.jetbrains.kotlin.ir.expressions.IrBlockBody
@@ -306,7 +305,7 @@ class ClassGenerator(
         delegateToDescriptor: FunctionDescriptor
     ): IrSimpleFunction =
         context.symbolTable.declareSimpleFunctionWithOverrides(
-            UNDEFINED_OFFSET, UNDEFINED_OFFSET,
+            irDelegate.startOffset, irDelegate.endOffset,
             IrDeclarationOrigin.DELEGATED_MEMBER,
             delegatedDescriptor
         ).buildWithScope { irFunction ->
@@ -324,8 +323,8 @@ class ClassGenerator(
         delegateToDescriptor: FunctionDescriptor,
         irDelegatedFunction: IrSimpleFunction
     ): IrBlockBody {
-        val startOffset = UNDEFINED_OFFSET
-        val endOffset = UNDEFINED_OFFSET
+        val startOffset = irDelegate.startOffset
+        val endOffset = irDelegate.endOffset
 
         val irBlockBody = context.irFactory.createBlockBody(startOffset, endOffset)
 
