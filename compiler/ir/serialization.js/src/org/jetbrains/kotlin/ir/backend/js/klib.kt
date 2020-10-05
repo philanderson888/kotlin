@@ -549,8 +549,7 @@ fun serializeModuleIntoKlib(
         perFile = perFile,
         output = klibPath,
         versions = versions,
-        builtInsPlatform = BuiltInsPlatform.JS,
-        privateMemberSignatures = FakeOverrideControl.privateMemberSignatures
+        builtInsPlatform = BuiltInsPlatform.JS
     )
 }
 
