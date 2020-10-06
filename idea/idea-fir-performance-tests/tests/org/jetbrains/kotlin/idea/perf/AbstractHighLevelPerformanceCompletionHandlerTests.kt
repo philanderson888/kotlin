@@ -9,13 +9,13 @@ import com.intellij.codeInsight.completion.CompletionType
 import org.jetbrains.kotlin.idea.completion.FIR_COMPARISON
 import org.jetbrains.kotlin.test.InTextDirectivesUtils
 
-/**
- * inspired by @see AbstractCompletionHandlerTests
- */
 abstract class AbstractHighLevelPerformanceCompletionHandlerTests(
     defaultCompletionType: CompletionType,
     note: String = ""
 ) : AbstractPerformanceCompletionHandlerTests(defaultCompletionType, note) {
+
+    override val statsPrefix: String = "fir-completion"
+
     override fun doPerfTest(unused: String) {
         if (!InTextDirectivesUtils.isDirectiveDefined(testDataFile().readText(), FIR_COMPARISON)) return
 
